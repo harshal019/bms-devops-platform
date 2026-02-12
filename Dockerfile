@@ -3,6 +3,8 @@ FROM node:18 AS builder
 
 WORKDIR /app
 
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 # Copy dependency files
 COPY bookmyshow-app/package*.json ./
 
