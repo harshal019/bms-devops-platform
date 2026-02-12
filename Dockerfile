@@ -4,7 +4,7 @@ FROM node:18 AS builder
 WORKDIR /app
 
 # Copy dependency files
-COPY bookmyshowapp/package*.json ./
+COPY bookmyshow-app/package*.json ./
 
 # Fix PostCSS compatibility issue
 RUN npm install postcss@8.4.21 postcss-safe-parser@6.0.0 --legacy-peer-deps
@@ -13,7 +13,7 @@ RUN npm install postcss@8.4.21 postcss-safe-parser@6.0.0 --legacy-peer-deps
 RUN npm install
 
 # Copy source code
-COPY bookmyshowapp/ .
+COPY bookmyshow-app/ .
 
 # Build the application
 RUN npm run build
