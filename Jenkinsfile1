@@ -100,24 +100,21 @@ pipeline{
         stage('Deploy to Container') {
              steps {
                 script{
-                 sh '''
-                 echo "Verifying AWS credentials..."
-                 aws sts get-caller-identity
-                 echo "Configuring kubectl for EKS cluster..."
-                 aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
-                 
-                 echo "Verifying kubeconfig..."
-                 kubectl config view
-                 
-                 echo "Deploying application to EKS..."
-                 kubectl apply -f deployment.yml
-                 kubectl apply -f service.yml
-                 
-                 echo "Verifying deployment..."
-                 kubectl get pods
-                 kubectl get svc
-                
-                 '''
+                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-cred']]) {
+
+                    sh '''
+                    echo "Verifying AWS credentials..."
+                    aws sts get-caller-identity
+
+                    echo "Configuring kubectl for EKS cluster..."
+                    aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
+
+                    kubectl apply -f deployment.yml
+                    kubectl apply -f service.yml
+                    '''
+                }
+
              }
         } 
         }
