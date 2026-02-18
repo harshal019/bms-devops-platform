@@ -7,7 +7,7 @@ pipeline{
     environment {
         SCANNER_HOME = tool'sonar-scanner'
         DOCKER_IMAGE = ' harshalg01/bms-app:latest'
-        EKS_CLUSTER_NAME = 'Harshal-eks'
+        EKS_CLUSTER_NAME = 'bms-eks'
         AWS_REGION = 'us-east-2'
         
     }
