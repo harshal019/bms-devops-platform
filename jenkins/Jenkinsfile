@@ -50,24 +50,26 @@ pipeline{
     
         stage('Install Dependencies') {
             steps {
-                 sh '''
-                 cd bookmyshow-app
-                 ls -la # Verify package.json exists
-                 if [ -f package.json ]; then
-                    rm -rf node_modules package-lock.json # Remove old dependencies
-                    npm install # Install fresh dependencies
-                 else
-                    echo "Error: package.json not found in bookmyshow-app!"
-                    exit 1
-                 fi
-                '''
+                dir('bookmyshow-app') {
+                     sh '''
+                        ls -la
+                        if [ -f package.json ]; then
+                            rm -rf node_modules package-lock.json 
+                            npm install 
+                        else
+                            echo "Error: package.json not found in bookmyshow-app!"
+                            exit 1
+                        fi
+                    '''
+               
+                }
             }
-        }
+    }
         stage('OWASP FS Scan') {
             steps {
                 dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit',
                 odcInstallation: 'DP-Check'
-                dependencyCheckPublisher (pattern: '/dependency-check-report.xml')
+                dependencyCheckPublisher (pattern: '**/dependency-check-report.xml')
             }
 }
 
@@ -84,7 +86,7 @@ pipeline{
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                     sh '''
                      echo "Building Docker image..."
-                     docker build --no-cache -t harshalg01/bms-app:latest -f Dockerfile .
+                     docker build --no-cache -t harshalg01/bms-app:latest -f  docker/Dockerfile bookmyshow-app
                      
                      echo "Pushing Docker image to registry..."
                      docker push harshalg01/bms-app:latest
@@ -101,14 +103,11 @@ pipeline{
                  docker stop bms || true
                  docker rm bms || true
                  
-                 echo "Running new container on port 80..."
                  docker run -d --restart=always --name bms -p 3000:80 harshalg01/bms-app:latest
-                 echo "Checking running containers..."
                  
                  docker ps -a
-                 echo "Fetching logs..."
                  
-                 sleep 5 # Give *me for the app to start
+                 sleep 5 
                  docker logs bms
                  '''
              }
