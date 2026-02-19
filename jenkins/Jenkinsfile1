@@ -87,7 +87,7 @@ pipeline{
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                     sh '''
                      echo "Building Docker image..."
-                     docker build --no-cache -t harshalg01/bms-app:latest -f Dockerfile .
+                     docker build --no-cache -t harshalg01/bms-app:latest -f docker/Dockerfile .
                      
                      echo "Pushing Docker image to registry..."
                      docker push harshalg01/bms-app:latest
@@ -104,15 +104,16 @@ pipeline{
                     credentialsId: 'aws-cred']]) {
 
                     sh '''
-                    echo "Verifying AWS credentials..."
-                    aws sts get-caller-identity
-
-                    echo "Configuring kubectl for EKS cluster..."
-                    aws eks update-kubeconfig --name $EKS_CLUSTER_NAME --region $AWS_REGION
-
-                    kubectl apply -f deployment.yml
-                    kubectl apply -f service.yml
+                        echo "Verifying AWS credentials..."
+                        aws sts get-caller-identity
                     '''
+                    dir('kubernetes') {
+                        sh '''
+                            echo "Applying Kubernetes manifests..."
+                            kubectl apply -f deployment.yml
+                            kubectl apply -f service.yml
+                    '''
+                }
                 }
 
              }
